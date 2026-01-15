@@ -46,7 +46,7 @@ void W25_SectorErase(uint32_t address)
     addr[1] = (address >> 8)  & 0xFF;
     addr[2] =  address        & 0xFF;
 
-    W25_WriteEnable();     // 🔴 REQUIRED
+    W25_WriteEnable();    
 
     CS_Low();
 
@@ -75,6 +75,9 @@ void W25_Read(uint32_t addr,uint8_t *rdata,uint16_t len){
 
 	uint8_t cmd = 0x03;
 	uint8_t r_addr[3];
+	uint8_t dummy = 0xFF
+	uint8_t throw;
+	
 
 	r_addr[0] = (addr>>16) & 0xFF;
 	r_addr[1] = (addr >> 8) & 0xFF;
@@ -82,9 +85,23 @@ void W25_Read(uint32_t addr,uint8_t *rdata,uint16_t len){
 
 	CS_Low();
 
+	while(!(SPI1->SR & (1<<1)))
+		SPI1->DR = duummy;
+	while(!(SPI1->SR & (1<<0)))
+		throw = SPI1->DR
+			
+
 	SPI1_Transmit(&cmd, 1);
 	SPI1_Transmit(r_addr, 3);
 
+	for (uin16_t i = 0; i < len; i++){
+		while(!(SPI1->SR & (1<<1)))
+			SPI1->DR = dummy;
+		while(!(SPI1->SR & (1<<0)))
+			rdata[i] = SPI1->DR;
+	}
+	while(!(SPI1->SR & (1<<7)));
+	
 	SPI1_Receive(rdata,len);
 
 	CS_High();
@@ -133,3 +150,35 @@ void W25_Pageprogram(uint32_t addr,uint8_t *tdata,uint16_t len){
 	Is_Bussy();
 }
 
+void Read_Id(uint8_t *id){
+
+uint8_t cmd = 0x9F;
+uint8_t dummy = 0xFF;
+uint8_t throw;
+
+CS_Low();
+	
+while(!(SPI1->SR & (1<<1)));
+	SPI1->DR = dummy;
+while(!(SPI1->SR & (1<<0)));
+	throw = SPI1->DR;
+	
+SPI1_Transmit(&cmd,1);
+	
+for (int i = 0; i < 3; i++){
+	while(!(SPI1->SR & (1<<1)));
+	SPI1->DR = dummy;
+		while(!(SPI1->SR & (1<<0)));
+	id[i] = SPI1->DR;
+}
+
+	while (SPI1->SR (1<<7));
+	CS_High();
+}
+	
+	
+
+
+
+}
+	
