@@ -15,12 +15,12 @@
 For Number and Port see the corresponding c files 
 
 For GPS    =     GPS.C
-For USART2 =   USART2.C
-FOR W25Q  =    SPI1.c
-
+For USART2 =     USART2.C
+FOR W25Q  =      SPI1.c
 
 i use the SPI1 for the W25Q64J
 
+For Register shift Referenece see the stm32f411retx.h in the last Page 
 
 Email id: lmbmkathirvela@gmail.com
 
@@ -51,20 +51,24 @@ void delay_ms(uint32_t ms)
 
 int main(void)
 {
-
+        /* ADC Init*/
        ADC1_GPIO_Init();
        ADC1_Init();
+
+       /*SPI1 Init*/
         SPI1_GPIOConfig();
         SPI1_Init();
+
+       /*USART1 Init*/
         GPS_GPIOInit();
         GPS_Init();
+       /*USART2 Init*/
         USART2_GPIOInit();
         USART2_Init();
 
+   
      NVIC_EnableIRQ(USART1_IRQn);
      NVIC_EnableIRQ(USART2_IRQn);
-
-
 
 
       uint32_t data;
@@ -73,17 +77,12 @@ int main(void)
 
       uint8_t txBuf[128];
 
-
-
-
        while (1)
        {
 
     	   data = ADC1_ReadVal();
 
     	   ADC_Val(data, &da);
-
-
 
            if (usart1.rbusy == 0)
            {
@@ -93,7 +92,7 @@ int main(void)
                if (GPS_ProcessByte(st[0]))
                {
 
-            	   if ((flash % 4096) == 0)   // sector boundary
+            	   if ((flash % 4096) == 0)          // sector boundary
             	   {
             	       Sector_Erase(flash);
 					   Is_Bussy();
@@ -105,29 +104,24 @@ int main(void)
 
                  W25_Pageprogram(flash,(uint8_t*)&da,sizeof(logdata));
 
-                 Is_Bussy();
+                 Is_Bussy();  // Wait for w25 to write 
 
                  W25_Read(flash,(uint8_t*)&readback,sizeof(logdata));
 
-                 flash += sizeof(logdata);
+                 flash += sizeof(logdata);    // size appro equal to 40
 
  		      int len = snprintf((char*)txBuf, sizeof(txBuf), "LAT:%s%s\r\n" "LON:%s%s\r\n" "Temp:%" PRIu32 "\r\n" "----------------\r\n",
  		            	        readback.lat, readback.ns,
  		            	        readback.lon, readback.ew,
  		            	        readback.temp);
 
-					 while(Config.busy);
+				 while(Config.busy);
 
  		       USART2_Transmit_IT(&ConFig, txBuf, len);
-
- 		                                     
-
 
                }
                }
               }
-
-
 
  }
 
@@ -144,8 +138,6 @@ void  USART1_IRQHandler(void)
         	USART1->CR1 &= ~(1<<5);
 
         	usart1.rbusy = 0;
-
-
 
         }
 
