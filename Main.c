@@ -67,7 +67,7 @@ int main(void)
 
 
 
-      uint16_t data;
+      uint32_t data;
 
       uint8_t st[10];
 
@@ -96,7 +96,11 @@ int main(void)
             	   if ((flash % 4096) == 0)   // sector boundary
             	   {
             	       Sector_Erase(flash);
+					   Is_Bussy();
             	   }
+				   if((flash % 256) + (sizeof(logdata)) > 256){
+					   flash = (flash /256 +1) * 256
+						   }
 
 
                  W25_Pageprogram(flash,(uint8_t*)&da,sizeof(logdata));
@@ -107,14 +111,16 @@ int main(void)
 
                  flash += sizeof(logdata);
 
- 		      int len = snprintf((char*)txBuf, sizeof(txBuf), "LAT:%s%s\r\n" "LON:%s%s\r\n" "Temp:%" PRIu16 "\r\n" "----------------\r\n",
- 		            	        da.lat, da.ns,
- 		            	        da.lon, da.ew,
- 		            	        da.temp);
+ 		      int len = snprintf((char*)txBuf, sizeof(txBuf), "LAT:%s%s\r\n" "LON:%s%s\r\n" "Temp:%" PRIu32 "\r\n" "----------------\r\n",
+ 		            	        readback.lat, readback.ns,
+ 		            	        readback.lon, readback.ew,
+ 		            	        readback.temp);
+
+					 while(Config.busy);
 
  		       USART2_Transmit_IT(&ConFig, txBuf, len);
 
- 		        delay_ms(50);                                  // i use this which is super fast u may use above 200
+ 		                                     
 
 
                }
