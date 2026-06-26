@@ -92,11 +92,7 @@ int main(void)
                if (GPS_ProcessByte(st[0]))
                {
 
-            	   if ((flash % 4096) == 0)          // sector boundary
-            	   {
-            	       Sector_Erase(flash);
-					   Is_Bussy();
-            	   }
+
 				   if((flash % 256) + (sizeof(logdata)) > 256){
 					   flash = (flash /256 +1) * 256
 						   }
